@@ -4,7 +4,7 @@
 
 **Project Title**: Retail Sales Analysis  
 **Level**: Beginner  
-**Database**: `p1_retail_db`
+**Database**: `Retail_Analysis`
 
 This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore, clean, and analyze retail sales data. The project involves setting up a retail sales database, performing exploratory data analysis (EDA), and answering specific business questions through SQL queries. This project is ideal for those who are starting their journey in data analysis and want to build a solid foundation in SQL.
 
@@ -13,13 +13,13 @@ This project is designed to demonstrate SQL skills and techniques typically used
 1. **Set up a retail sales database**: Create and populate a retail sales database with the provided sales data.
 2. **Data Cleaning**: Identify and remove any records with missing or null values.
 3. **Exploratory Data Analysis (EDA)**: Perform basic exploratory data analysis to understand the dataset.
-4. **Business Analysis**: Use SQL to answer specific business questions and derive insights from the sales data.
+4. **Business Questions**: Use SQL to answer specific business questions and derive insights from the sales data.
 
 ## Project Structure
 
 ### 1. Database Setup
 
-- **Database Creation**: The project starts by creating a database named `p1_retail_db`.
+- **Database Creation**: The project starts by creating a database named `Retail_Analysis`.
 - **Table Creation**: A table named `retail_sales` is created to store the sales data. The table structure includes columns for transaction ID, sale date, sale time, customer ID, gender, age, product category, quantity sold, price per unit, cost of goods sold (COGS), and total sale amount.
 
 ```sql
@@ -41,17 +41,13 @@ CREATE TABLE retail_sales
 );
 ```
 
-### 2. Data Exploration & Cleaning
+### 2. Data Cleaning 🧹
 
 - **Record Count**: Determine the total number of records in the dataset.
-- **Customer Count**: Find out how many unique customers are in the dataset.
-- **Category Count**: Identify all unique product categories in the dataset.
 - **Null Value Check**: Check for any null values in the dataset and delete records with missing data.
 
 ```sql
 SELECT COUNT(*) FROM retail_sales;
-SELECT COUNT(DISTINCT customer_id) FROM retail_sales;
-SELECT DISTINCT category FROM retail_sales;
 
 SELECT * FROM retail_sales
 WHERE 
@@ -64,9 +60,23 @@ WHERE
     sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
     gender IS NULL OR age IS NULL OR category IS NULL OR 
     quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+
+SELECT COUNT(*) FROM retail_sales;
 ```
 
-### 3. Data Analysis & Findings
+### 3.Data Exploration Analysis (EDA) 📊
+
+- **Customer Count**: Find out how many unique customers are in the dataset.
+- **Category Count**: Identify all unique product categories in the dataset.
+
+```sql
+SELECT COUNT(DISTINCT customer_id) FROM retail_sales;
+
+SELECT DISTINCT category FROM retail_sales;
+```
+
+
+### 4. Business Questions ❔❔
 
 The following SQL queries were developed to answer specific business questions:
 
@@ -79,112 +89,135 @@ WHERE sale_date = '2022-11-05';
 
 2. **Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022**:
 ```sql
-SELECT 
-  *
-FROM retail_sales
-WHERE 
-    category = 'Clothing'
-    AND 
-    TO_CHAR(sale_date, 'YYYY-MM') = '2022-11'
-    AND
-    quantity >= 4
+select *
+from retail_sales
+where category = 'Clothing' and 
+quantiy >=4  and
+FORMAT(sale_date,'yyyy-MM') = '2022-11';
 ```
 
 3. **Write a SQL query to calculate the total sales (total_sale) for each category.**:
 ```sql
-SELECT 
-    category,
-    SUM(total_sale) as net_sale,
-    COUNT(*) as total_orders
-FROM retail_sales
-GROUP BY 1
+select category
+,sum(total_sale) AS [Total Sales],
+count(*) as [Number Of Orders],
+sum(quantiy) as [Number Of Quantities]
+from retail_sales
+group by category 
+order by [Total Sales];
 ```
 
 4. **Write a SQL query to find the average age of customers who purchased items from the 'Beauty' category.**:
 ```sql
-SELECT
-    ROUND(AVG(age), 2) as avg_age
-FROM retail_sales
-WHERE category = 'Beauty'
+select category,
+avg(age) as [Average age]
+from retail_sales
+where category = 'Beauty'
+group by category;
 ```
 
-5. **Write a SQL query to find all transactions where the total_sale is greater than 1000.**:
+5. **Write a SQL query to find all transactions where the total_sale is greater than 1500.**:
 ```sql
-SELECT * FROM retail_sales
-WHERE total_sale > 1000
+SELECT *
+FROM retail_sales
+WHERE total_sale > 1500
 ```
 
 6. **Write a SQL query to find the total number of transactions (transaction_id) made by each gender in each category.**:
 ```sql
-SELECT 
-    category,
-    gender,
-    COUNT(*) as total_trans
-FROM retail_sales
-GROUP 
-    BY 
-    category,
-    gender
-ORDER BY 1
+select gender,
+category
+,COUNT(*) AS [number of orders]
+from retail_sales
+group by gender,category
+order by gender, [number of orders];
 ```
 
-7. **Write a SQL query to calculate the average sale for each month. Find out best selling month in each year**:
+7. **Write a SQL query to calculate the average sale for each month. Find out best selling Month**:
 ```sql
-SELECT 
-       year,
-       month,
-    avg_sale
-FROM 
-(    
-SELECT 
-    EXTRACT(YEAR FROM sale_date) as year,
-    EXTRACT(MONTH FROM sale_date) as month,
-    AVG(total_sale) as avg_sale,
-    RANK() OVER(PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) as rank
-FROM retail_sales
-GROUP BY 1, 2
-) as t1
-WHERE rank = 1
+select * from (
+select DATEPART(MONTH,sale_date) as Months ,
+round(avg(total_sale),2) as [Total Sales],
+rank() over(order by avg(total_sale) desc ) as Ranking
+from retail_sales
+group by DATEPART(MONTH,sale_date))t
+where Ranking = 1
 ```
 
-8. **Write a SQL query to find the top 5 customers based on the highest total sales **:
+8. **Find which year we have the highest sales**:
 ```sql
-SELECT 
-    customer_id,
-    SUM(total_sale) as total_sales
-FROM retail_sales
-GROUP BY 1
-ORDER BY 2 DESC
-LIMIT 5
+select DATEPART(YEAR,sale_date) as Years,
+sum(total_sale) AS [Total Sales]
+from retail_sales
+group by DATEPART(YEAR,sale_date)
+order by [Total Sales];
 ```
 
-9. **Write a SQL query to find the number of unique customers who purchased items from each category.**:
+9. **Find the BESTSELLERRRR 😃 month in each year(2022,2023)**
 ```sql
-SELECT 
-    category,    
-    COUNT(DISTINCT customer_id) as cnt_unique_cs
-FROM retail_sales
-GROUP BY category
+select * from (
+select DATEPART(year,sale_date) as Years,
+DATEPART(month,sale_date) as Months,
+round(avg(total_sale),2) as Average_Totals,
+rank() over(partition by DATEPART(year,sale_date) order by round(avg(total_sale),2) desc) as Ranking
+from retail_sales 
+group by DATEPART(year,sale_date),DATEPART(month,sale_date)) AS t
+where Ranking = 1;
 ```
 
-10. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
+
+
+10. **Write a SQL query to find the top 5 customers based on the highest total sales**:
 ```sql
-WITH hourly_sale
-AS
-(
-SELECT *,
-    CASE
-        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
-        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
-        ELSE 'Evening'
-    END as shift
-FROM retail_sales
-)
-SELECT 
-    shift,
-    COUNT(*) as total_orders    
-FROM hourly_sale
-GROUP BY shift
+select top(5) customer_id,
+sum(total_sale) AS [Total Sales]
+from retail_sales
+group by customer_id 
+order by [Total Sales] desc
+```
+
+11. **Write a SQL query to find the number of unique customers who purchased items from each category.**:
+```sql
+select
+category ,
+count(distinct customer_id) [Unique Customers]
+from retail_sales
+group by category 
+order by [Unique Customers] desc
+```
+
+12. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
+```sql
+**Using SubQueries**
+SELECT
+shifts,
+count(*) AS [Sum Of Orders]
+FROM
+         (SELECT DATEPART(HOUR, sale_time) AS Hours,
+        CASE WHEN DATEPART(HOUR, sale_time) < 12 THEN 'Morning'
+             WHEN DATEPART(HOUR, sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+             ELSE 'Evening'
+             END AS shifts
+        FROM retail_sales
+        ) t
+GROUP BY shifts
+order by [Sum Of Orders] desc;
+
+
+**or Using CTE**
+
+with hourly_sales as
+(SELECT DATEPART(HOUR, sale_time) AS Hours,
+CASE WHEN DATEPART(HOUR, sale_time) < 12 THEN 'Morning'
+     WHEN DATEPART(HOUR, sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+     ELSE 'Evening'
+     END AS shifts
+FROM retail_sales) 
+
+select shifts,count(*) as [Total Orders]
+from hourly_sales 
+group by shifts
+order by [Total Orders] desc;
 ```
 
 ## Findings
